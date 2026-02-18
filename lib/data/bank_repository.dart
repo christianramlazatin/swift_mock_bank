@@ -125,7 +125,7 @@ class BankRepository {
     }
 
     return const Customer(
-      name: 'Juan Dela Cruz',
+      name: 'Christian',
       email: 'juan.delacruz@gcash.com',
       address: 'Makati City, Metro Manila, Philippines',
       phone: '+63 917 000 0000',

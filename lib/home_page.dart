@@ -72,6 +72,7 @@ class _HomePageState extends State<HomePage> {
                 onRefresh: _reload,
                 onProfileTap: _openProfileOptions,
                 onOpenProfile: _openProfilePage,
+                onLogout: _logout,
               );
             }
 
@@ -234,6 +235,7 @@ class _MobileHomeScaffold extends StatelessWidget {
     required this.onRefresh,
     required this.onProfileTap,
     required this.onOpenProfile,
+    required this.onLogout,
   });
 
   final Customer customer;
@@ -244,6 +246,7 @@ class _MobileHomeScaffold extends StatelessWidget {
   final VoidCallback onRefresh;
   final VoidCallback onProfileTap;
   final VoidCallback onOpenProfile;
+  final VoidCallback onLogout;
 
   @override
   Widget build(BuildContext context) {
@@ -262,7 +265,11 @@ class _MobileHomeScaffold extends StatelessWidget {
       ),
       drawer: Drawer(
         child: SafeArea(
-          child: _DrawerContent(customer: customer, onProfileTap: onProfileTap),
+          child: _DrawerContent(
+            customer: customer,
+            onProfileTap: onProfileTap,
+            onLogoutTap: onLogout,
+          ),
         ),
       ),
       body: _DashboardContent(
@@ -357,10 +364,15 @@ class _DashboardSidebar extends StatelessWidget {
 }
 
 class _DrawerContent extends StatelessWidget {
-  const _DrawerContent({required this.customer, required this.onProfileTap});
+  const _DrawerContent({
+    required this.customer,
+    required this.onProfileTap,
+    required this.onLogoutTap,
+  });
 
   final Customer customer;
   final VoidCallback onProfileTap;
+  final VoidCallback onLogoutTap;
 
   @override
   Widget build(BuildContext context) {
@@ -399,6 +411,14 @@ class _DrawerContent extends StatelessWidget {
           icon: Icons.shield_outlined,
           title: 'Security',
           onTap: () => Navigator.pop(context),
+        ),
+        _DrawerItem(
+          icon: Icons.logout,
+          title: 'Logout',
+          onTap: () {
+            Navigator.pop(context);
+            onLogoutTap();
+          },
         ),
       ],
     );

@@ -5,7 +5,7 @@ class BpiApiMappers {
   static Customer mapCustomerFromEnvelope(Object? payload) {
     final Map<String, dynamic> map = _asMap(_unwrapData(payload));
     final String name =
-        _pickString(map, <String>['name', 'full_name']) ?? 'Juan Dela Cruz';
+        _pickString(map, <String>['name', 'full_name']) ?? 'Christian';
 
     return Customer(
       name: name,
@@ -184,26 +184,57 @@ class BpiApiMappers {
         ) ??
         0;
 
-    final String? direction = _pickString(json, <String>[
+    final String direction = (_pickString(json, <String>[
       'direction',
       'debit_credit',
       'entry_type',
-    ]);
+      'type',
+      'transaction_type',
+      'category',
+      'flow',
+      'dc_indicator',
+    ]) ?? '')
+        .trim()
+        .toLowerCase();
 
     final bool? isCreditFlag = _asBool(json['is_credit'] ?? json['credit']);
     final bool? isDebitFlag = _asBool(json['is_debit'] ?? json['debit']);
 
-    if ((direction ?? '').toLowerCase().contains('debit') ||
-        isDebitFlag == true) {
+    if (_isDebitDirection(direction) || isDebitFlag == true) {
       return -raw.abs();
     }
 
-    if ((direction ?? '').toLowerCase().contains('credit') ||
-        isCreditFlag == true) {
+    if (_isCreditDirection(direction) || isCreditFlag == true) {
       return raw.abs();
     }
 
     return raw;
+  }
+
+  static bool _isDebitDirection(String value) {
+    if (value.isEmpty) {
+      return false;
+    }
+
+    return value == 'd' ||
+        value == 'dr' ||
+        value.contains('debit') ||
+        value.contains('outflow') ||
+        value.contains('withdraw') ||
+        value.contains('expense');
+  }
+
+  static bool _isCreditDirection(String value) {
+    if (value.isEmpty) {
+      return false;
+    }
+
+    return value == 'c' ||
+        value == 'cr' ||
+        value.contains('credit') ||
+        value.contains('inflow') ||
+        value.contains('deposit') ||
+        value.contains('income');
   }
 
   static AccountType _mapAccountType(String? raw) {
