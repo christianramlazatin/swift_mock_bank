@@ -704,7 +704,13 @@ class _RecentActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double listHeight = (transactions.length * 86.0).clamp(160.0, 360.0);
+    final List<BankTransaction> sortedTransactions = <BankTransaction>[
+      ...transactions,
+    ]..sort((BankTransaction a, BankTransaction b) => b.date.compareTo(a.date));
+    final double listHeight = (sortedTransactions.length * 86.0).clamp(
+      160.0,
+      360.0,
+    );
 
     return Card(
       child: Padding(
@@ -720,9 +726,9 @@ class _RecentActivityCard extends StatelessWidget {
             SizedBox(
               height: listHeight,
               child: ListView.builder(
-                itemCount: transactions.length,
+                itemCount: sortedTransactions.length,
                 itemBuilder: (BuildContext context, int index) {
-                  final BankTransaction tx = transactions[index];
+                  final BankTransaction tx = sortedTransactions[index];
 
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
@@ -731,7 +737,7 @@ class _RecentActivityCard extends StatelessWidget {
                           ? Colors.green.shade50
                           : Colors.red.shade50,
                       child: Icon(
-                        tx.isCredit ? Icons.south_west : Icons.north_east,
+                        tx.isCredit ? Icons.arrow_downward : Icons.arrow_upward,
                         color: tx.isCredit
                             ? Colors.green.shade700
                             : Colors.red.shade700,

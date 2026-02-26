@@ -81,10 +81,16 @@ class BpiApiMappers {
     final dynamic normalized = _unwrapData(payload);
     final List<dynamic> rows = _extractTransactionRows(normalized);
 
-    return rows
+    final List<BankTransaction> transactions = rows
         .whereType<Map<String, dynamic>>()
         .map<BankTransaction>(mapTransaction)
         .toList(growable: false);
+
+    transactions.sort(
+      (BankTransaction a, BankTransaction b) => b.date.compareTo(a.date),
+    );
+
+    return transactions;
   }
 
   static BankTransaction mapTransaction(Map<String, dynamic> json) {
@@ -102,7 +108,11 @@ class BpiApiMappers {
       json['date'] ?? json['timestamp'] ?? json['created_at'],
     );
 
-    final double amount = _normalizeAmount(json);
+    final double amount = _normalizeAmount(
+      json,
+      category: category,
+      title: title,
+    );
 
     return BankTransaction(
       title: title,
@@ -165,7 +175,11 @@ class BpiApiMappers {
     return const <dynamic>[];
   }
 
-  static double _normalizeAmount(Map<String, dynamic> json) {
+  static double _normalizeAmount(
+    Map<String, dynamic> json, {
+    required TransactionCategory category,
+    required String title,
+  }) {
     final double raw = _asDouble(
           json['amount'] ??
               json['value'] ??
@@ -176,23 +190,100 @@ class BpiApiMappers {
 
     final String? direction = _pickString(
       json,
-      <String>['direction', 'debit_credit', 'entry_type'],
+      <String>[
+        'direction',
+        'debit_credit',
+        'entry_type',
+        'transaction_type',
+        'transactionType',
+        'dr_cr',
+        'dc_indicator',
+      ],
     );
 
     final bool? isCreditFlag = _asBool(json['is_credit'] ?? json['credit']);
     final bool? isDebitFlag = _asBool(json['is_debit'] ?? json['debit']);
+    final String normalizedDirection = (direction ?? '').trim().toLowerCase();
 
-    if ((direction ?? '').toLowerCase().contains('debit') ||
-        isDebitFlag == true) {
+    if (_isDebitDirection(normalizedDirection) || isDebitFlag == true) {
       return -raw.abs();
     }
 
-    if ((direction ?? '').toLowerCase().contains('credit') ||
-        isCreditFlag == true) {
+    if (_isCreditDirection(normalizedDirection) || isCreditFlag == true) {
       return raw.abs();
     }
 
+    if (raw < 0) {
+      return -raw.abs();
+    }
+
+    if (raw > 0) {
+      if (category == TransactionCategory.income) {
+        return raw.abs();
+      }
+
+      if (category == TransactionCategory.bills) {
+        return -raw.abs();
+      }
+
+      if (category == TransactionCategory.transfer) {
+        return _looksIncomingTransfer(json, title: title)
+            ? raw.abs()
+            : -raw.abs();
+      }
+    }
+
     return raw;
+  }
+
+  static bool _isDebitDirection(String value) {
+    if (value.contains('debit') || value.contains('outflow')) {
+      return true;
+    }
+    final List<String> tokens = value.split(RegExp(r'[^a-z0-9]+'));
+    return tokens.contains('dr') ||
+        tokens.contains('d') ||
+        tokens.contains('deb') ||
+        tokens.contains('out');
+  }
+
+  static bool _isCreditDirection(String value) {
+    if (value.contains('credit') || value.contains('inflow')) {
+      return true;
+    }
+    final List<String> tokens = value.split(RegExp(r'[^a-z0-9]+'));
+    return tokens.contains('cr') ||
+        tokens.contains('c') ||
+        tokens.contains('cred') ||
+        tokens.contains('in');
+  }
+
+  static bool _looksIncomingTransfer(
+    Map<String, dynamic> json, {
+    required String title,
+  }) {
+    final String context =
+        '$title '
+        '${_pickString(json, <String>['description', 'remarks', 'notes']) ?? ''} '
+        '${_pickString(json, <String>['merchant', 'reference']) ?? ''}'
+            .toLowerCase();
+
+    if (context.contains('transfer from') ||
+        context.contains('received') ||
+        context.contains('incoming') ||
+        context.contains('inbound') ||
+        context.contains('credit from')) {
+      return true;
+    }
+
+    if (context.contains('transfer to') ||
+        context.contains('sent') ||
+        context.contains('outgoing') ||
+        context.contains('payment to')) {
+      return false;
+    }
+
+    return false;
   }
 
   static AccountType _mapAccountType(String? raw) {
