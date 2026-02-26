@@ -32,6 +32,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _pullToRefresh() async {
+    _reload();
+    try {
+      await _dashboardFuture;
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<DashboardData>(
@@ -68,7 +75,7 @@ class _HomePageState extends State<HomePage> {
                 billers: data.billers,
                 transactions: data.transactions,
                 totalBalance: data.totalBalance,
-                onRefresh: _reload,
+                onPullToRefresh: _pullToRefresh,
                 onProfileTap: _openProfileOptions,
                 onOpenProfile: _openProfilePage,
               );
@@ -80,7 +87,7 @@ class _HomePageState extends State<HomePage> {
               billers: data.billers,
               transactions: data.transactions,
               totalBalance: data.totalBalance,
-              onRefresh: _reload,
+              onPullToRefresh: _pullToRefresh,
               onProfileTap: _openProfileOptions,
               onOpenProfile: _openProfilePage,
             );
@@ -185,7 +192,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
     required this.billers,
     required this.transactions,
     required this.totalBalance,
-    required this.onRefresh,
+    required this.onPullToRefresh,
     required this.onProfileTap,
     required this.onOpenProfile,
   });
@@ -195,7 +202,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
   final List<Biller> billers;
   final List<BankTransaction> transactions;
   final double totalBalance;
-  final VoidCallback onRefresh;
+  final Future<void> Function() onPullToRefresh;
   final VoidCallback onProfileTap;
   final VoidCallback onOpenProfile;
 
@@ -213,7 +220,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
               transactions: transactions,
               totalBalance: totalBalance,
               isCompact: false,
-              onRefresh: onRefresh,
+              onPullToRefresh: onPullToRefresh,
             ),
           ),
         ],
@@ -229,7 +236,7 @@ class _MobileHomeScaffold extends StatelessWidget {
     required this.billers,
     required this.transactions,
     required this.totalBalance,
-    required this.onRefresh,
+    required this.onPullToRefresh,
     required this.onProfileTap,
     required this.onOpenProfile,
   });
@@ -239,7 +246,7 @@ class _MobileHomeScaffold extends StatelessWidget {
   final List<Biller> billers;
   final List<BankTransaction> transactions;
   final double totalBalance;
-  final VoidCallback onRefresh;
+  final Future<void> Function() onPullToRefresh;
   final VoidCallback onProfileTap;
   final VoidCallback onOpenProfile;
 
@@ -247,7 +254,7 @@ class _MobileHomeScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Swift Bank'),
+        title: const Text('BPI'),
         backgroundColor: const Color(0xFFD32F2F),
         foregroundColor: Colors.white,
       ),
@@ -263,7 +270,7 @@ class _MobileHomeScaffold extends StatelessWidget {
         transactions: transactions,
         totalBalance: totalBalance,
         isCompact: true,
-        onRefresh: onRefresh,
+        onPullToRefresh: onPullToRefresh,
       ),
     );
   }
@@ -284,7 +291,7 @@ class _DashboardSidebar extends StatelessWidget {
         children: <Widget>[
           const SizedBox(height: 36),
           Semantics(
-            label: 'Swift Bank brand logo',
+            label: 'BPI brand logo',
             image: true,
             child: Image.asset('assets/bank_logo.png', height: 58),
           ),
@@ -415,7 +422,7 @@ class _DashboardContent extends StatelessWidget {
     required this.transactions,
     required this.totalBalance,
     required this.isCompact,
-    required this.onRefresh,
+    required this.onPullToRefresh,
   });
 
   final Customer customer;
@@ -424,95 +431,95 @@ class _DashboardContent extends StatelessWidget {
   final List<BankTransaction> transactions;
   final double totalBalance;
   final bool isCompact;
-  final VoidCallback onRefresh;
+  final Future<void> Function() onPullToRefresh;
 
   @override
   Widget build(BuildContext context) {
     final String firstName = customer.name.split(' ').first;
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(isCompact ? 16 : 24),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1040),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _DashboardHeader(
-                firstName: firstName,
-                isCompact: isCompact,
-                onRefresh: onRefresh,
-              ),
-              const SizedBox(height: 18),
-              if (isCompact)
-                Column(
-                  children: <Widget>[
-                    _TotalBalanceCard(totalBalance: totalBalance),
-                    const SizedBox(height: 18),
-                    _AccountsCard(accounts: accounts),
-                    const SizedBox(height: 18),
-                    _BillersCard(billers: billers),
-                    const SizedBox(height: 18),
-                    _RecentActivityCard(transactions: transactions),
-                  ],
-                )
-              else
-                Column(
-                  children: <Widget>[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          child: LayoutBuilder(
-                            builder:
-                                (
-                                  BuildContext context,
-                                  BoxConstraints constraints,
-                                ) {
-                                  final double balanceWidth =
-                                      ((constraints.maxWidth - 18) * 0.62)
-                                          .clamp(420.0, 620.0)
-                                          .toDouble();
-                                  return Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      SizedBox(
-                                        width: balanceWidth,
-                                        child: _TotalBalanceCard(
-                                          totalBalance: totalBalance,
+    return RefreshIndicator(
+      onRefresh: onPullToRefresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(isCompact ? 16 : 24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1040),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                _DashboardHeader(firstName: firstName, isCompact: isCompact),
+                const SizedBox(height: 18),
+                if (isCompact)
+                  Column(
+                    children: <Widget>[
+                      _TotalBalanceCard(totalBalance: totalBalance),
+                      const SizedBox(height: 18),
+                      _AccountsCard(accounts: accounts),
+                      const SizedBox(height: 18),
+                      _BillersCard(billers: billers),
+                      const SizedBox(height: 18),
+                      _RecentActivityCard(transactions: transactions),
+                    ],
+                  )
+                else
+                  Column(
+                    children: <Widget>[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder:
+                                  (
+                                    BuildContext context,
+                                    BoxConstraints constraints,
+                                  ) {
+                                    final double balanceWidth =
+                                        ((constraints.maxWidth - 18) * 0.62)
+                                            .clamp(420.0, 620.0)
+                                            .toDouble();
+                                    return Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        SizedBox(
+                                          width: balanceWidth,
+                                          child: _TotalBalanceCard(
+                                            totalBalance: totalBalance,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 18),
-                                      Expanded(
-                                        child: _BillersCard(
-                                          billers: billers,
-                                          compact: true,
+                                        const SizedBox(width: 18),
+                                        Expanded(
+                                          child: _BillersCard(
+                                            billers: billers,
+                                            compact: true,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  );
-                                },
+                                      ],
+                                    );
+                                  },
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(child: _AccountsCard(accounts: accounts)),
-                        const SizedBox(width: 18),
-                        Expanded(
-                          child: _RecentActivityCard(
-                            transactions: transactions,
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(child: _AccountsCard(accounts: accounts)),
+                          const SizedBox(width: 18),
+                          Expanded(
+                            child: _RecentActivityCard(
+                              transactions: transactions,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-            ],
+                        ],
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -521,15 +528,10 @@ class _DashboardContent extends StatelessWidget {
 }
 
 class _DashboardHeader extends StatelessWidget {
-  const _DashboardHeader({
-    required this.firstName,
-    required this.isCompact,
-    required this.onRefresh,
-  });
+  const _DashboardHeader({required this.firstName, required this.isCompact});
 
   final String firstName;
   final bool isCompact;
-  final VoidCallback onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -542,26 +544,13 @@ class _DashboardHeader extends StatelessWidget {
       ),
     );
 
-    final Widget refreshButton = IconButton(
-      onPressed: onRefresh,
-      tooltip: 'Refresh dashboard data',
-      icon: const Icon(Icons.refresh),
-    );
-
     if (isCompact) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: Text(
-                  'Welcome back, $firstName',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              ),
-              refreshButton,
-            ],
+          Text(
+            'Welcome back, $firstName',
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 12),
           profileButton,
@@ -577,7 +566,6 @@ class _DashboardHeader extends StatelessWidget {
             style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
-        refreshButton,
         profileButton,
       ],
     );

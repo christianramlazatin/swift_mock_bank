@@ -89,7 +89,7 @@ class _SwiftBankAppState extends State<SwiftBankApp> {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Swift Bank',
+      title: 'BPI',
       theme: baseTheme,
       initialRoute: LoginPage.routeName,
       routes: <String, WidgetBuilder>{

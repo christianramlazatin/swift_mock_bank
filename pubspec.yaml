@@ -1,5 +1,5 @@
 name: swift_bank
-description: "Swift Mock Bank demo app built with Flutter."
+description: "BPI mock bank demo app built with Flutter."
 publish_to: 'none'
 version: 1.0.0+1
 
