@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = swift_bank
+PRODUCT_NAME = gcash
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.swiftBank
+PRODUCT_BUNDLE_IDENTIFIER = com.gcash.mockbank
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.

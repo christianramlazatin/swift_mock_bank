@@ -1,6 +1,6 @@
 {
-    "name": "swift_bank",
-    "short_name": "swift_bank",
+    "name": "gcash",
+    "short_name": "gcash",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

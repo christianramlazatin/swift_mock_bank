@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:swift_bank/main.dart';
+import 'package:gcash/main.dart';
 
 void main() {
   testWidgets('App supports login and logout flow', (
