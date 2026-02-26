@@ -737,19 +737,25 @@ class _RecentActivityList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<BankTransaction> sortedTransactions = <BankTransaction>[
+      ...transactions,
+    ]..sort((BankTransaction a, BankTransaction b) => b.date.compareTo(a.date));
+
     return ListView.separated(
-      itemCount: transactions.length,
+      itemCount: sortedTransactions.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       separatorBuilder: (BuildContext context, int index) =>
           const Divider(height: 1),
       itemBuilder: (BuildContext context, int index) {
-        final BankTransaction tx = transactions[index];
+        final BankTransaction tx = sortedTransactions[index];
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(vertical: 4),
-          leading: const Icon(
-            Icons.receipt_long_outlined,
-            color: Color(0xFF0057D9),
+          leading: Icon(
+            tx.isCredit ? Icons.arrow_downward : Icons.arrow_upward,
+            color: tx.isCredit
+                ? const Color(0xFF0F9D58)
+                : const Color(0xFFB3261E),
           ),
           title: Text(tx.title),
           subtitle: Text(
