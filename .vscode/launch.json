@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter (iPhone 17 Pro)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "5E438F95-535F-4A09-B569-E37E8E2F2FE7"
+    },
+    {
+      "name": "Flutter (iPhone 17)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "784B8FF4-422B-437D-BBDF-3910A9431FA6"
+    }
+  ]
+}

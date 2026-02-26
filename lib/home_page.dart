@@ -33,6 +33,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _pullToRefresh() async {
+    _reload();
+    try {
+      await _dashboardFuture;
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<DashboardData>(
@@ -70,6 +77,7 @@ class _HomePageState extends State<HomePage> {
                 transactions: data.transactions,
                 totalBalance: data.totalBalance,
                 onRefresh: _reload,
+                onPullToRefresh: _pullToRefresh,
                 onProfileTap: _openProfileOptions,
                 onOpenProfile: _openProfilePage,
                 onLogout: _logout,
@@ -233,6 +241,7 @@ class _MobileHomeScaffold extends StatelessWidget {
     required this.transactions,
     required this.totalBalance,
     required this.onRefresh,
+    required this.onPullToRefresh,
     required this.onProfileTap,
     required this.onOpenProfile,
     required this.onLogout,
@@ -244,6 +253,7 @@ class _MobileHomeScaffold extends StatelessWidget {
   final List<BankTransaction> transactions;
   final double totalBalance;
   final VoidCallback onRefresh;
+  final Future<void> Function() onPullToRefresh;
   final VoidCallback onProfileTap;
   final VoidCallback onOpenProfile;
   final VoidCallback onLogout;
@@ -272,15 +282,18 @@ class _MobileHomeScaffold extends StatelessWidget {
           ),
         ),
       ),
-      body: _DashboardContent(
-        customer: customer,
-        accounts: accounts,
-        billers: billers,
-        transactions: transactions,
-        totalBalance: totalBalance,
-        isCompact: true,
-        onRefresh: onRefresh,
-        onOpenProfile: onOpenProfile,
+      body: RefreshIndicator(
+        onRefresh: onPullToRefresh,
+        child: _DashboardContent(
+          customer: customer,
+          accounts: accounts,
+          billers: billers,
+          transactions: transactions,
+          totalBalance: totalBalance,
+          isCompact: true,
+          onRefresh: onRefresh,
+          onOpenProfile: onOpenProfile,
+        ),
       ),
     );
   }
@@ -466,6 +479,7 @@ class _DashboardContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      physics: isCompact ? const AlwaysScrollableScrollPhysics() : null,
       padding: EdgeInsets.all(isCompact ? 0 : 24),
       child: Center(
         child: ConstrainedBox(
@@ -473,12 +487,13 @@ class _DashboardContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              _WalletHero(
-                balance: totalBalance,
-                onRefresh: onRefresh,
-                onOpenProfile: onOpenProfile,
-              ),
-              const SizedBox(height: 16),
+              if (!isCompact)
+                _WalletHero(
+                  balance: totalBalance,
+                  onRefresh: onRefresh,
+                  onOpenProfile: onOpenProfile,
+                ),
+              if (!isCompact) const SizedBox(height: 16),
               _QuickActionsGrid(
                 onActionTap: (String actionName) =>
                     _showFeatureSnack(context, actionName),
