@@ -33,6 +33,13 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  Future<void> _pullToRefresh() async {
+    _reload();
+    try {
+      await _profileFuture;
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<ProfileData>(
@@ -74,28 +81,25 @@ class _ProfilePageState extends State<ProfilePage> {
             backgroundColor: const Color(0xFFD32F2F),
             foregroundColor: Colors.white,
             title: const Text('Customer Profile'),
-            actions: <Widget>[
-              IconButton(
-                onPressed: _reload,
-                tooltip: 'Refresh profile data',
-                icon: const Icon(Icons.refresh),
-              ),
-            ],
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 900),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _CustomerHeaderCard(customer: data.customer),
-                    const SizedBox(height: 16),
-                    _CustomerDetailCard(customer: data.customer),
-                    const SizedBox(height: 16),
-                    _LinkedAccountsCard(accounts: data.accounts),
-                  ],
+          body: RefreshIndicator(
+            onRefresh: _pullToRefresh,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      _CustomerHeaderCard(customer: data.customer),
+                      const SizedBox(height: 16),
+                      _CustomerDetailCard(customer: data.customer),
+                      const SizedBox(height: 16),
+                      _LinkedAccountsCard(accounts: data.accounts),
+                    ],
+                  ),
                 ),
               ),
             ),

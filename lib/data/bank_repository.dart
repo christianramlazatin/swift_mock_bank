@@ -36,8 +36,8 @@ class BankRepository {
   const BankRepository({
     required this.apiService,
     required this.billerApiService,
-    this.accountId = 'BPI001',
-    this.userId = 'BPI001',
+    this.accountId = 'BPI1234',
+    this.userId = 'BPI1234',
   });
 
   final BpiApiService apiService;
@@ -125,10 +125,10 @@ class BankRepository {
     }
 
     return const Customer(
-      name: 'Juan Dela Cruz',
-      email: 'juan.delacruz@bpi.com.ph',
-      address: 'Makati City, Metro Manila, Philippines',
-      phone: '+63 917 000 0000',
+      name: 'Christian Lazatin',
+      email: 'christian.lazatin@bpi.com.ph',
+      address: 'Taguig City, Metro Manila, Philippines',
+      phone: '+63 917 123 4567',
       age: 30,
     );
   }
@@ -138,7 +138,7 @@ class BankRepository {
       return <BankAccount>[
         BankAccount(
           accountId: accountId,
-          nickname: 'Pangunahing Account',
+          nickname: 'Christian Lazatin Account',
           accountType: AccountType.checking,
           accountNumber: _maskAccountNumber(accountId),
           balance: 0,
@@ -163,7 +163,7 @@ class BankRepository {
       return <BankAccount>[
         BankAccount(
           accountId: accountId,
-          nickname: 'Pangunahing Account',
+          nickname: 'Christian Lazatin Account',
           accountType: AccountType.checking,
           accountNumber: _maskAccountNumber(accountId),
           balance: 0,

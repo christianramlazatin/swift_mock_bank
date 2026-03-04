@@ -4,16 +4,13 @@ import '../../models.dart';
 class BpiApiMappers {
   static Customer mapCustomerFromEnvelope(Object? payload) {
     final Map<String, dynamic> map = _asMap(_unwrapData(payload));
-    final String name = _pickString(map, <String>['name', 'full_name']) ??
-        'Juan Dela Cruz';
+    final String name = 'Christian Lazatin';
 
     return Customer(
       name: name,
-      email:
-          _pickString(map, <String>['email']) ?? 'juan.delacruz@bpi.com.ph',
-      address: _pickString(map, <String>['address']) ??
-          'Makati City, Metro Manila, Philippines',
-      phone: _pickString(map, <String>['phone']) ?? '+63 917 000 0000',
+      email: 'christian.lazatin@bpi.com.ph',
+      address: 'Taguig City, Metro Manila, Philippines',
+      phone: '+63 917 123 4567',
       age: _asInt(map['age']) ?? 30,
     );
   }
@@ -29,8 +26,7 @@ class BpiApiMappers {
 
     return BankAccount(
       accountId: resolvedId,
-      nickname: _pickString(map, <String>['nickname', 'name']) ??
-          'Pangunahing Account',
+      nickname: 'Christian Lazatin Account',
       accountType: _mapAccountType(
         _pickString(map, <String>['account_type', 'type']),
       ),

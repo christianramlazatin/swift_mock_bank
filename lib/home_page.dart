@@ -89,7 +89,6 @@ class _HomePageState extends State<HomePage> {
               totalBalance: data.totalBalance,
               onPullToRefresh: _pullToRefresh,
               onProfileTap: _openProfileOptions,
-              onOpenProfile: _openProfilePage,
             );
           },
         );
@@ -111,11 +110,6 @@ class _HomePageState extends State<HomePage> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ListTile(
-                leading: const Icon(Icons.person_outline),
-                title: const Text('View Profile'),
-                onTap: () => Navigator.pop(context, 'profile'),
-              ),
-              ListTile(
                 leading: const Icon(Icons.logout),
                 title: const Text('Logout'),
                 onTap: () => Navigator.pop(context, 'logout'),
@@ -127,11 +121,6 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (!mounted || action == null) {
-      return;
-    }
-
-    if (action == 'profile') {
-      Navigator.pushNamed(context, ProfilePage.routeName);
       return;
     }
 
@@ -194,7 +183,6 @@ class _DesktopHomeScaffold extends StatelessWidget {
     required this.totalBalance,
     required this.onPullToRefresh,
     required this.onProfileTap,
-    required this.onOpenProfile,
   });
 
   final Customer customer;
@@ -204,7 +192,6 @@ class _DesktopHomeScaffold extends StatelessWidget {
   final double totalBalance;
   final Future<void> Function() onPullToRefresh;
   final VoidCallback onProfileTap;
-  final VoidCallback onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -257,6 +244,13 @@ class _MobileHomeScaffold extends StatelessWidget {
         title: const Text('BPI'),
         backgroundColor: const Color(0xFFD32F2F),
         foregroundColor: Colors.white,
+        actions: <Widget>[
+          IconButton(
+            tooltip: 'Open profile',
+            onPressed: onOpenProfile,
+            icon: const Icon(Icons.person_outline),
+          ),
+        ],
       ),
       drawer: Drawer(
         child: SafeArea(
@@ -535,26 +529,10 @@ class _DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Widget profileButton = Tooltip(
-      message: 'Open customer profile',
-      child: FilledButton.icon(
-        onPressed: () => Navigator.pushNamed(context, ProfilePage.routeName),
-        icon: const Icon(Icons.person_outline),
-        label: const Text('View Profile'),
-      ),
-    );
-
     if (isCompact) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Welcome back, $firstName',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 12),
-          profileButton,
-        ],
+      return Text(
+        'Welcome back, $firstName',
+        style: Theme.of(context).textTheme.headlineSmall,
       );
     }
 
@@ -566,7 +544,6 @@ class _DashboardHeader extends StatelessWidget {
             style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
-        profileButton,
       ],
     );
   }
